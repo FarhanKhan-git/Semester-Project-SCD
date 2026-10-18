@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- This one page is used by both the examiner (review + override) and the student (view result) -->
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <p class="small"><a id="backLink" href="#">&larr; Back</a></p>
+      <div class="page-head mt-16">
+        <div>
+          <h1 id="title">Result</h1>
+          <p id="subtitle"></p>
+        </div>
+      </div>
+
+      <div id="message" class="hidden"></div>
+
+      <!-- Shown to students when the examiner has not published results yet -->
+      <div id="waiting" class="card hidden">
+        <div class="empty">
+          <strong>Your exam has been submitted</strong>
+          Results will appear here once your examiner reviews and publishes them.
+        </div>
+      </div>
+
+      <div id="resultArea" class="hidden">
+        <div class="stats">
+          <div class="stat"><div class="label">Total score</div><div class="value" id="statScore">0</div></div>
+          <div class="stat"><div class="label">Percentage</div><div class="value teal" id="statPercent">0%</div></div>
+          <div class="stat"><div class="label">Correct answers</div><div class="value amber" id="statCorrect">0</div></div>
+          <div class="stat"><div class="label">Integrity flags</div><div class="value" id="statFlags">0</div></div>
+        </div>
+
+        <div id="flagBox" class="alert alert-info hidden"></div>
+        <div id="questions"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const user = requireLogin();
+    buildSidebar(user.role === "student" ? "student-dashboard.html" : "");
+    const attemptId = new URLSearchParams(window.location.search).get("id");
+
+    async function loadResult() {
+      const r = await api("/api/attempts/" + attemptId);
+      document.getElementById("title").textContent = r.exam_title;
+
+      if (!r.published) {
+        document.getElementById("backLink").href = "student-dashboard.html";
+        document.getElementById("subtitle").textContent = "Status: " + r.status;
+        document.getElementById("waiting").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("backLink").href =
+        user.role === "student" ? "student-dashboard.html" : "exam-details.html?id=" + r.exam_id;
+      document.getElementById("subtitle").textContent =
+        `${r.student_name} | ${formatDate(r.started_at)} | Difficulty: ${r.difficulty} | Document: ${r.file_name}`;
+      document.getElementById("resultArea").classList.remove("hidden");
+
+      document.getElementById("statScore").textContent = `${r.score} / ${r.max_score}`;
+      document.getElementById("statPercent").textContent = percent(r.score, r.max_score) + "%";
+      document.getElementById("statCorrect").textContent =
+        r.questions.filter(q => q.verdict === "Correct").length + " / " + r.questions.length;
+      document.getElementById("statFlags").textContent = r.flags;
+
+      if (r.flags && user.role !== "student") {
+        const box = document.getElementById("flagBox");
+        box.classList.remove("hidden");
+        box.textContent = `The student left the exam window ${r.flags} time(s) during the exam.`;
+      }
+
+      // One block per question
+      document.getElementById("questions").innerHTML = r.questions.map(q => {
+        const answered = q.answer !== null && q.answer !== undefined;
+        return `
+        <div class="q-block">
+          <div class="q-head">
+            <div>
+              <div class="q-number">Question ${q.number}</div>
+              <h3>${escapeHtml(q.question)}</h3>
+            </div>
+            <div style="text-align:right;">
+              <div class="q-score">${answered ? q.final_score : 0}<span class="muted" style="font-size:15px;"> / 10</span></div>
+              ${answered ? badge(q.verdict) : badge("Not answered")}
+              ${q.overridden ? '<div class="small muted">Changed by examiner</div>' : ""}
+            </div>
+          </div>
+          <div class="bar"><div style="width:${answered ? q.final_score * 10 : 0}%"></div></div>
+
+          <div class="q-label">Answer ${q.typed ? "(typed)" : "(spoken transcript)"}</div>
+          <div class="q-text">${answered && q.answer ? escapeHtml(q.answer) : '<span class="muted">No answer</span>'}</div>
+
+          <div class="q-label">Feedback</div>
+          <div>${answered ? escapeHtml(q.reason) : "No answer was recorded for this question."}</div>
+
+          <div class="q-label">Source from the document (section ${q.chunk_index + 1})</div>
+          <div class="q-text q-source">${escapeHtml(q.source)}</div>
+
+          ${r.can_override && answered ? `
+          <div class="override">
+            <label class="small"><strong>Override score:</strong></label>
+            <input type="number" min="0" max="10" value="${q.final_score}" id="ov${q.number}">
+            <button class="btn btn-outline btn-sm" onclick="override(${q.number})">Save</button>
+            <span class="small muted">AI score: ${q.ai_score}</span>
+          </div>` : ""}
+        </div>`;
+      }).join("");
+    }
+
+    async function override(number) {
+      const score = parseInt(document.getElementById("ov" + number).value);
+      try {
+        await api(`/api/attempts/${attemptId}/override`, { method: "POST", body: { number, score } });
+        loadResult();
+      } catch (error) {
+        showMessage("message", error.message);
+      }
+    }
+
+    loadResult().catch(error => showMessage("message", error.message));
+  </script>
+</body>
+</html>

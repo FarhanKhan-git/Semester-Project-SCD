@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Admin Panel</h1>
+          <p>Manage users and see how the system is being used.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="label">Examiners</div><div class="value" id="statExaminers">0</div></div>
+        <div class="stat"><div class="label">Students</div><div class="value teal" id="statStudents">0</div></div>
+        <div class="stat"><div class="label">Exams</div><div class="value amber" id="statExams">0</div></div>
+        <div class="stat"><div class="label">Attempts</div><div class="value" id="statAttempts">0</div></div>
+      </div>
+
+      <div class="card">
+        <h2>All users</h2>
+        <p class="card-sub">Registered accounts, newest first.</p>
+        <div id="message" class="hidden"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const me = requireLogin("admin");
+    buildSidebar("admin.html");
+
+    async function loadOverview() {
+      const data = await api("/api/admin/overview");
+      document.getElementById("statExaminers").textContent = data.examiners;
+      document.getElementById("statStudents").textContent = data.students;
+      document.getElementById("statExams").textContent = data.exams;
+      document.getElementById("statAttempts").textContent = data.attempts;
+
+      const roleBadge = { admin: "badge-red", examiner: "badge-amber", student: "badge-green" };
+      document.getElementById("userRows").innerHTML = data.users.map(u => `
+        <tr>
+          <td><strong>${escapeHtml(u.name)}</strong></td>
+          <td>${escapeHtml(u.email)}</td>
+          <td><span class="badge ${roleBadge[u.role]}" style="text-transform:capitalize;">${u.role}</span></td>
+          <td class="small">${formatDate(u.created_at)}</td>
+          <td>${u.id === me.id ? '<span class="small muted">You</span>' :
+            `<button class="btn btn-danger btn-sm" onclick="removeUser('${u.id}')">Remove</button>`}</td>
+        </tr>`).join("");
+    }
+
+    async function removeUser(id) {
+      if (!confirm("Remove this user? They will no longer be able to log in.")) return;
+      try {
+        await api("/api/admin/users/" + id, { method: "DELETE" });
+        loadOverview();
+      } catch (error) {
+        showMessage("message", error.message);
+      }
+    }
+
+    loadOverview();
+  </script>
+</body>
+</html>

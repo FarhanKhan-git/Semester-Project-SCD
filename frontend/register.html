@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create account | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth">
+
+    <div class="auth-side">
+      <a class="logo" href="index.html">
+        <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>VivaVoice
+      </a>
+      <div>
+        <div class="big-wave">
+          <span style="height:30%"></span><span style="height:60%"></span><span style="height:90%"></span>
+          <span style="height:50%"></span><span style="height:100%"></span><span style="height:70%"></span>
+          <span style="height:40%"></span><span style="height:80%"></span><span style="height:55%"></span>
+          <span style="height:30%"></span>
+        </div>
+        <h2>A fair viva for every student.</h2>
+        <p>Examiners create document-based voice exams. Students answer out loud and get clear feedback.</p>
+      </div>
+      <p class="small">Foundation University Islamabad</p>
+    </div>
+
+    <div class="auth-form">
+      <div class="card">
+        <h1>Create account</h1>
+        <p class="card-sub">Choose your role to get started.</p>
+        <div id="message" class="hidden"></div>
+
+        <form id="registerForm">
+          <div class="field">
+            <label>I am a</label>
+            <div class="choices">
+              <label><input type="radio" name="role" value="student" checked><span>Student</span></label>
+              <label><input type="radio" name="role" value="examiner"><span>Examiner</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" required placeholder="e.g. Muhammad Farhan Khan">
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" required placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" required minlength="6" placeholder="At least 6 characters">
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Create account</button>
+        </form>
+
+        <p class="mt-16 small">Already have an account? <a href="login.html">Log in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        const data = await api("/api/register", {
+          method: "POST",
+          body: {
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            role: document.querySelector("input[name=role]:checked").value,
+          },
+        });
+        saveLogin(data);
+        window.location.href = homePage(data.user.role);
+      } catch (error) {
+        showMessage("message", error.message);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Exam | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Create Exam</h1>
+          <p>Upload the document students will be examined on, then choose the exam settings.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Left: the form -->
+        <div class="card">
+          <div id="message" class="hidden"></div>
+
+          <form id="examForm">
+            <div class="field">
+              <label>Source document</label>
+              <label class="dropzone" for="file">
+                <input type="file" id="file" accept=".pdf,.docx,.txt" required>
+                <strong>Click to choose a PDF, DOCX or TXT file</strong>
+                <span class="small muted">Maximum size 20 MB. Questions will come only from this document.</span>
+                <div class="file-name" id="fileName"></div>
+              </label>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="title">Exam title</label>
+                <input type="text" id="title" required placeholder="e.g. FYP Mid Viva">
+              </div>
+              <div class="field">
+                <label for="course">Course</label>
+                <input type="text" id="course" placeholder="e.g. Software Construction">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Difficulty</label>
+              <div class="choices">
+                <label><input type="radio" name="difficulty" value="Easy"><span>Easy</span></label>
+                <label><input type="radio" name="difficulty" value="Medium" checked><span>Medium</span></label>
+                <label><input type="radio" name="difficulty" value="Hard"><span>Hard</span></label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="numQuestions">Number of questions</label>
+                <input type="number" id="numQuestions" min="3" max="15" value="5" required>
+                <div class="hint">Between 3 and 15.</div>
+              </div>
+              <div class="field">
+                <label for="timePerAnswer">Time per answer</label>
+                <select id="timePerAnswer">
+                  <option value="30">30 seconds</option>
+                  <option value="60">1 minute</option>
+                  <option value="90" selected>1 minute 30 seconds</option>
+                  <option value="120">2 minutes</option>
+                  <option value="180">3 minutes</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" type="submit" id="submitBtn">Create Exam</button>
+          </form>
+
+          <!-- Shown after the exam is created -->
+          <div id="successBox" class="hidden" style="text-align:center; padding: 10px 0;">
+            <div class="done-icon"><span></span></div>
+            <h2>Exam created</h2>
+            <p class="muted">Share this code with your students:</p>
+            <div class="mt-16"><button class="code-chip" id="newCode" style="font-size:22px; padding:10px 18px;"></button></div>
+            <p class="small muted mt-16" id="chunkInfo"></p>
+            <div class="actions mt-24" style="justify-content:center;">
+              <a class="btn btn-primary" id="viewLink" href="#">View exam</a>
+              <a class="btn btn-outline" href="create-exam.html">Create another</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: help cards -->
+        <div>
+          <div class="card">
+            <h2>What happens next</h2>
+            <p class="card-sub">After you click Create Exam:</p>
+            <ol class="steps-list">
+              <li>The text is extracted from your document.</li>
+              <li>It is split into small sections (chunks) and stored.</li>
+              <li>Each student gets questions from different sections at the same difficulty.</li>
+              <li>Answers are graded against the section each question came from.</li>
+            </ol>
+          </div>
+          <div class="card mt-24">
+            <h2>Grounding rules</h2>
+            <p class="card-sub" style="margin-bottom:0;">The examiner agent never asks anything that is not in your document, does not give hints, and shows you the source of every question in the results.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    requireLogin("examiner");
+    buildSidebar("create-exam.html");
+
+    // Show the chosen file name inside the upload box
+    document.getElementById("file").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      document.getElementById("fileName").textContent = file ? file.name : "";
+    });
+
+    document.getElementById("examForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("submitBtn");
+      button.disabled = true;
+      button.textContent = "Processing document...";
+
+      // FormData is used because we are sending a file
+      const form = new FormData();
+      form.append("file", document.getElementById("file").files[0]);
+      form.append("title", document.getElementById("title").value);
+      form.append("course", document.getElementById("course").value);
+      form.append("difficulty", document.querySelector("input[name=difficulty]:checked").value);
+      form.append("num_questions", document.getElementById("numQuestions").value);
+      form.append("time_per_answer", document.getElementById("timePerAnswer").value);
+
+      try {
+        const exam = await api("/api/exams", { method: "POST", form });
+        document.getElementById("examForm").classList.add("hidden");
+        document.getElementById("message").classList.add("hidden");
+        document.getElementById("successBox").classList.remove("hidden");
+        document.getElementById("newCode").textContent = exam.code;
+        document.getElementById("newCode").onclick = () => copyCode(exam.code);
+        document.getElementById("chunkInfo").textContent =
+          `${exam.word_count} words processed into ${exam.chunk_count} sections.`;
+        document.getElementById("viewLink").href = "exam-details.html?id=" + exam.id;
+      } catch (error) {
+        showMessage("message", error.message);
+        button.disabled = false;
+        button.textContent = "Create Exam";
+      }
+    });
+  </script>
+</body>
+</html>

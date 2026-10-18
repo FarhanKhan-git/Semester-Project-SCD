@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice Mode | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Practice Mode</h1>
+          <p>Rehearse a viva on your own report. Results are shown to you right away.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div id="message" class="hidden"></div>
+          <form id="practiceForm">
+            <div class="field">
+              <label>Your document</label>
+              <label class="dropzone" for="file">
+                <input type="file" id="file" accept=".pdf,.docx,.txt" required>
+                <strong>Click to choose your report (PDF, DOCX or TXT)</strong>
+                <span class="small muted">Only you will see this practice session.</span>
+                <div class="file-name" id="fileName"></div>
+              </label>
+            </div>
+
+            <div class="field">
+              <label>Difficulty</label>
+              <div class="choices">
+                <label><input type="radio" name="difficulty" value="Easy"><span>Easy</span></label>
+                <label><input type="radio" name="difficulty" value="Medium" checked><span>Medium</span></label>
+                <label><input type="radio" name="difficulty" value="Hard"><span>Hard</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="numQuestions">Number of questions</label>
+              <select id="numQuestions">
+                <option value="3">3 questions</option>
+                <option value="5" selected>5 questions</option>
+                <option value="8">8 questions</option>
+              </select>
+            </div>
+
+            <button class="btn btn-accent btn-lg" type="submit" id="startBtn">Start practice viva</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Tips for a good viva</h2>
+          <p class="card-sub">The same tips work for the real exam.</p>
+          <ol class="steps-list">
+            <li>Use Chrome or Edge and allow microphone access.</li>
+            <li>Sit in a quiet place and speak clearly at a normal speed.</li>
+            <li>Explain in your own words. Mention the key terms from your report.</li>
+            <li>Check the live transcript before submitting. You can re-record once.</li>
+          </ol>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    requireLogin("student");
+    buildSidebar("practice.html");
+
+    document.getElementById("file").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      document.getElementById("fileName").textContent = file ? file.name : "";
+    });
+
+    document.getElementById("practiceForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("startBtn");
+      button.disabled = true;
+      button.textContent = "Preparing your questions...";
+
+      const form = new FormData();
+      form.append("file", document.getElementById("file").files[0]);
+      form.append("difficulty", document.querySelector("input[name=difficulty]:checked").value);
+      form.append("num_questions", document.getElementById("numQuestions").value);
+
+      try {
+        const data = await api("/api/practice", { method: "POST", form });
+        window.location.href = "exam-room.html?id=" + data.attempt_id;
+      } catch (error) {
+        showMessage("message", error.message);
+        button.disabled = false;
+        button.textContent = "Start practice viva";
+      }
+    });
+  </script>
+</body>
+</html>

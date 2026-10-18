@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pymongo
+python-multipart
+pymupdf
+python-docx
+bcrypt
+pyjwt

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VivaVoice | AI Voice Examiner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top navigation -->
+  <header class="topnav">
+    <a class="logo" href="index.html">
+      <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>VivaVoice
+    </a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="login.html">Log in</a>
+      <a class="btn btn-primary" href="register.html">Get started</a>
+    </nav>
+  </header>
+
+  <!-- Hero section -->
+  <section class="hero">
+    <div>
+      <span class="eyebrow">RAG-grounded oral assessment</span>
+      <h1>Your document. <em>An AI examiner.</em> A fair viva for every student.</h1>
+      <p>Upload a report or chapter and VivaVoice conducts a spoken viva with each student. Every question comes only from your document, and every grade shows its source.</p>
+      <div class="actions">
+        <a class="btn btn-accent btn-lg" href="register.html">Create an exam</a>
+        <a class="btn btn-outline btn-lg" href="login.html">Join with a code</a>
+      </div>
+    </div>
+
+    <!-- A preview of what the exam looks like -->
+    <div class="preview">
+      <div class="top"><span>Question 2 of 5</span><span>01:24</span></div>
+      <div class="question">Explain how chunking affects the quality of retrieval, using the points given in the document.</div>
+      <div class="listening">
+        <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="transcript">"Chunking splits the report into smaller parts so the system can find the most relevant part..."</div>
+      </div>
+      <div class="source"><b>Source:</b> Section 3.2, RAG Pipeline (chunk 14 of 42)</div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how">
+    <div class="section-title">
+      <h2>How VivaVoice works</h2>
+      <p>Four steps from document to traceable results.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h3>Upload</h3><p>The examiner uploads a PDF or DOCX and sets the number of questions, difficulty and time.</p></div>
+      <div class="step"><div class="num">2</div><h3>Share the code</h3><p>VivaVoice prepares the document and creates a unique exam code for the class.</p></div>
+      <div class="step"><div class="num">3</div><h3>Voice viva</h3><p>The AI agent speaks each question. The student answers out loud and sees a live transcript.</p></div>
+      <div class="step"><div class="num">4</div><h3>Review</h3><p>The examiner sees scores, feedback, transcripts and sources, and can override any score.</p></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" style="padding-top: 0;">
+    <div class="section-title">
+      <h2>Built for fair oral exams</h2>
+      <p>Designed around the needs of both examiners and students.</p>
+    </div>
+    <div class="features">
+      <div class="feature"><div class="icon"><span></span></div><h3>Grounded questions</h3><p>Every question is generated from one section of your document. Nothing from outside the syllabus.</p></div>
+      <div class="feature"><div class="icon"><span></span></div><h3>Spoken exam</h3><p>Questions are read aloud and answers are captured by voice, with a typing fallback.</p></div>
+      <div class="feature"><div class="icon"><span></span></div><h3>Meaning-based grading</h3><p>Each answer is scored against its source section with a short reason.</p></div>
+      <div class="feature"><div class="icon"><span></span></div><h3>Different questions per student</h3><p>Each student gets questions from different parts of the document at the same difficulty.</p></div>
+      <div class="feature"><div class="icon"><span></span></div><h3>Integrity flags</h3><p>Tab switches and window changes during the exam are recorded for the examiner.</p></div>
+      <div class="feature"><div class="icon"><span></span></div><h3>Practice mode</h3><p>Students upload their own report and rehearse a viva before the real one.</p></div>
+    </div>
+  </section>
+
+  <!-- Roles -->
+  <section class="section" style="padding-top: 0;">
+    <div class="roles">
+      <div class="role-card dark">
+        <h3>For examiners</h3>
+        <ul>
+          <li>Create an exam in under two minutes</li>
+          <li>Consistent difficulty for the whole class</li>
+          <li>Full transcript and source for every answer</li>
+          <li>Final say on every score</li>
+        </ul>
+        <a class="btn btn-accent" href="register.html">Register as examiner</a>
+      </div>
+      <div class="role-card light">
+        <h3>For students</h3>
+        <ul>
+          <li>Join with a simple exam code</li>
+          <li>Answer by voice, like a real viva</li>
+          <li>Practise on your own report anytime</li>
+          <li>Clear feedback on every answer</li>
+        </ul>
+        <a class="btn btn-primary" href="register.html">Register as student</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">VivaVoice &middot; Semester Project by Muhammad Farhan Khan (F24-BSSE-027) &middot; Foundation University Islamabad</footer>
+
+</body>
+</html>

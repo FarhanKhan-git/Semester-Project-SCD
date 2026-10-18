@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Details | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <p class="small"><a href="examiner-dashboard.html">&larr; Back to dashboard</a></p>
+      <div class="page-head mt-16">
+        <div>
+          <h1 id="title">Exam</h1>
+          <p id="subtitle"></p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-accent" id="publishBtn" onclick="publish()">Publish results</button>
+          <button class="btn btn-outline" id="closeBtn" onclick="closeExam()">Close exam</button>
+          <button class="btn btn-danger" onclick="deleteExam()">Delete</button>
+        </div>
+      </div>
+
+      <div id="message" class="hidden"></div>
+
+      <div class="stats">
+        <div class="stat"><div class="label">Exam code</div><div class="value" style="font-size:22px;"><button class="code-chip" id="code"></button></div></div>
+        <div class="stat"><div class="label">Attempts</div><div class="value amber" id="statAttempts">0</div></div>
+        <div class="stat"><div class="label">Average score</div><div class="value teal" id="statAvg">-</div></div>
+        <div class="stat"><div class="label">Integrity flags</div><div class="value" id="statFlags">0</div></div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Attempts table -->
+        <div class="card">
+          <h2>Student attempts</h2>
+          <p class="card-sub">Open an attempt to see answers, sources and to override scores.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Student</th><th>Started</th><th>Status</th><th>Score</th><th>Flags</th><th></th></tr></thead>
+              <tbody id="attemptRows"></tbody>
+            </table>
+          </div>
+          <div id="emptyState" class="empty hidden"><strong>No attempts yet</strong>Share the exam code with your students.</div>
+        </div>
+
+        <!-- Exam information -->
+        <div class="card">
+          <h2>Exam settings</h2>
+          <p class="card-sub">Source document and configuration.</p>
+          <ul class="info-list" id="info"></ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    requireLogin("examiner");
+    buildSidebar("");
+    const examId = new URLSearchParams(window.location.search).get("id");
+
+    async function loadExam() {
+      const exam = await api("/api/exams/" + examId);
+      document.getElementById("title").textContent = exam.title;
+      document.getElementById("subtitle").textContent = (exam.course || "No course") + " | Created " + formatDate(exam.created_at);
+      document.getElementById("code").textContent = exam.code;
+      document.getElementById("code").onclick = () => copyCode(exam.code);
+
+      if (exam.published) {
+        document.getElementById("publishBtn").textContent = "Results published";
+        document.getElementById("publishBtn").disabled = true;
+      }
+      if (exam.status === "Closed") {
+        document.getElementById("closeBtn").textContent = "Exam closed";
+        document.getElementById("closeBtn").disabled = true;
+      }
+
+      document.getElementById("info").innerHTML = `
+        <li><span>Document</span><span>${escapeHtml(exam.file_name)}</span></li>
+        <li><span>Words</span><span>${exam.word_count}</span></li>
+        <li><span>Sections (chunks)</span><span>${exam.chunk_count}</span></li>
+        <li><span>Questions per student</span><span>${exam.num_questions}</span></li>
+        <li><span>Difficulty</span><span>${badge(exam.difficulty)}</span></li>
+        <li><span>Time per answer</span><span>${exam.time_per_answer} seconds</span></li>
+        <li><span>Status</span><span>${badge(exam.status)}</span></li>
+        <li><span>Results</span><span>${exam.published ? badge("Published") : badge("Awaiting Results")}</span></li>`;
+
+      const list = exam.attempts;
+      const done = list.filter(a => a.status === "Completed");
+      document.getElementById("statAttempts").textContent = list.length;
+      document.getElementById("statFlags").textContent = list.reduce((s, a) => s + a.flags, 0);
+      if (done.length) {
+        const avg = done.reduce((s, a) => s + percent(a.score, a.max_score), 0) / done.length;
+        document.getElementById("statAvg").textContent = Math.round(avg) + "%";
+      }
+
+      if (list.length === 0) {
+        document.getElementById("emptyState").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("attemptRows").innerHTML = list.map(a => `
+        <tr>
+          <td><strong>${escapeHtml(a.student_name)}</strong></td>
+          <td class="small">${formatDate(a.started_at)}</td>
+          <td>${badge(a.status)}</td>
+          <td><strong>${a.score}</strong><span class="muted"> / ${a.max_score}</span></td>
+          <td>${a.flags ? `<span class="badge badge-red">${a.flags}</span>` : `<span class="muted">0</span>`}</td>
+          <td><a class="btn btn-outline btn-sm" href="result.html?id=${a.id}">Review</a></td>
+        </tr>`).join("");
+    }
+
+    async function publish() {
+      if (!confirm("Publish results? Students will be able to see their scores and feedback.")) return;
+      await api(`/api/exams/${examId}/publish`, { method: "POST" });
+      loadExam();
+    }
+
+    async function closeExam() {
+      if (!confirm("Close this exam? Students will no longer be able to join.")) return;
+      await api(`/api/exams/${examId}/close`, { method: "POST" });
+      loadExam();
+    }
+
+    async function deleteExam() {
+      if (!confirm("Delete this exam and all student attempts? This cannot be undone.")) return;
+      await api("/api/exams/" + examId, { method: "DELETE" });
+      window.location.href = "examiner-dashboard.html";
+    }
+
+    loadExam().catch(error => showMessage("message", error.message));
+  </script>
+</body>
+</html>

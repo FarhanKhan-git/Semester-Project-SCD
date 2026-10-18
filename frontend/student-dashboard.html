@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 id="greeting">Dashboard</h1>
+          <p>Join an exam with the code from your examiner, or practise on your own document.</p>
+        </div>
+      </div>
+
+      <div class="grid-2-equal">
+        <!-- Join exam -->
+        <div class="card">
+          <h2>Join an exam</h2>
+          <p class="card-sub">Enter the exam code your examiner shared with you.</p>
+          <div id="message" class="hidden"></div>
+          <form id="joinForm">
+            <div class="field">
+              <label for="code">Exam code</label>
+              <input type="text" id="code" required placeholder="VV-7K2QP" style="text-transform:uppercase; font-size:18px; letter-spacing:1px;">
+            </div>
+            <button class="btn btn-accent btn-block" type="submit" id="joinBtn">Start exam</button>
+          </form>
+        </div>
+
+        <!-- Practice mode -->
+        <div class="card" style="background: var(--ink); color: #fff; border: none;">
+          <h2>Practice Mode</h2>
+          <p class="card-sub" style="color:#A9AECB;">Upload your own report and rehearse a viva before the real one. Your results are shown immediately.</p>
+          <ul class="rules" style="margin-top:0;">
+            <li style="border-color:#343A66;">Questions come only from your document</li>
+            <li style="border-color:#343A66;">Spoken exam with a live transcript</li>
+            <li style="border-color:#343A66;">Instant feedback on every answer</li>
+          </ul>
+          <a class="btn btn-accent" href="practice.html">Start practice</a>
+        </div>
+      </div>
+
+      <!-- My attempts -->
+      <div class="card mt-24">
+        <h2>My exams</h2>
+        <p class="card-sub">Your submitted exams and practice sessions.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Exam</th><th>Date</th><th>Type</th><th>Status</th><th>Score</th><th></th></tr></thead>
+            <tbody id="attemptRows"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty hidden"><strong>No exams yet</strong>Join an exam with a code or start a practice session.</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const user = requireLogin("student");
+    buildSidebar("student-dashboard.html");
+    document.getElementById("greeting").textContent = "Welcome, " + user.name;
+
+    document.getElementById("joinForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        const data = await api("/api/attempts/start", {
+          method: "POST",
+          body: { code: document.getElementById("code").value },
+        });
+        window.location.href = "exam-room.html?id=" + data.attempt_id;
+      } catch (error) {
+        showMessage("message", error.message);
+      }
+    });
+
+    async function loadAttempts() {
+      const list = await api("/api/my-attempts");
+      if (list.length === 0) {
+        document.getElementById("emptyState").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("attemptRows").innerHTML = list.map(a => {
+        let score = '<span class="muted">Awaiting results</span>';
+        if (a.published && a.status === "Completed") score = `<strong>${a.score}</strong><span class="muted"> / ${a.max_score}</span>`;
+        let action = `<a class="btn btn-outline btn-sm" href="result.html?id=${a.id}">View</a>`;
+        if (a.status === "In Progress") action = `<a class="btn btn-accent btn-sm" href="exam-room.html?id=${a.id}">Continue</a>`;
+        return `
+        <tr>
+          <td><strong>${escapeHtml(a.exam_title)}</strong></td>
+          <td class="small">${formatDate(a.started_at)}</td>
+          <td>${a.practice ? '<span class="badge badge-grey">Practice</span>' : '<span class="badge badge-amber">Exam</span>'}</td>
+          <td>${badge(a.status)}</td>
+          <td>${score}</td>
+          <td>${action}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    loadAttempts();
+  </script>
+</body>
+</html>

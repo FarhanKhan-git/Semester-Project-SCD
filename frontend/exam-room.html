@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Room | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="exam-page">
+
+    <!-- Top bar: logo, exam name, timer -->
+    <header class="exam-top">
+      <div>
+        <div class="logo"><div class="wave"><span></span><span></span><span></span><span></span><span></span></div>VivaVoice</div>
+        <div class="exam-name" id="examName"></div>
+      </div>
+      <div class="timer hidden" id="timer">00:00</div>
+    </header>
+    <div class="progress"><div id="progressBar" style="width:0%"></div></div>
+
+    <div class="exam-body">
+      <div class="exam-card">
+
+        <!-- SCREEN 1: before starting -->
+        <div id="startScreen" class="card">
+          <h2>Before you begin</h2>
+          <p class="card-sub" id="startInfo"></p>
+          <div id="voiceWarning" class="alert alert-info hidden">
+            Voice input is not supported in this browser. You can still take the exam by typing. For voice, please use Google Chrome or Microsoft Edge.
+          </div>
+          <ul class="rules">
+            <li>Each question is read aloud. Answer by speaking clearly after it finishes.</li>
+            <li>Your words appear in the live transcript. Check it before you submit.</li>
+            <li>You can re-record each answer once. If the microphone does not work, use "Type instead".</li>
+            <li>Each answer has a time limit. When time runs out, your answer is submitted automatically.</li>
+            <li>Leaving this window or switching tabs is recorded and shown to your examiner.</li>
+          </ul>
+          <button class="btn btn-accent btn-lg" onclick="startExam()">Allow microphone and start</button>
+        </div>
+
+        <!-- SCREEN 2: one question at a time -->
+        <div id="questionScreen" class="hidden">
+          <div class="q-number" id="qNumber"></div>
+          <div class="q-big" id="qText"></div>
+          <button class="btn btn-outline btn-sm" onclick="speakQuestion()">Listen again</button>
+
+          <!-- Voice mode -->
+          <div id="voiceArea">
+            <div class="mic-area">
+              <button class="mic-btn" id="micBtn" onclick="toggleListening()" title="Start or stop speaking">
+                <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
+              </button>
+              <div class="mic-status" id="micStatus">Tap to start speaking</div>
+            </div>
+            <div class="q-label">Live transcript</div>
+            <div class="transcript-box" id="transcript"><span class="muted">Your answer will appear here as you speak.</span></div>
+          </div>
+
+          <!-- Typing mode (fallback) -->
+          <div id="typeArea" class="hidden mt-24">
+            <div class="q-label">Type your answer</div>
+            <textarea id="typedAnswer" placeholder="Write your answer here..."></textarea>
+          </div>
+
+          <div class="exam-controls">
+            <div class="actions">
+              <button class="btn btn-outline" id="modeBtn" onclick="switchMode()">Type instead</button>
+              <button class="btn btn-outline" id="reRecordBtn" onclick="reRecord()">Re-record (1 left)</button>
+            </div>
+            <button class="btn btn-primary btn-lg" id="submitBtn" onclick="submitAnswer()">Submit answer</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 3: finished -->
+        <div id="doneScreen" class="card hidden" style="text-align:center; padding:48px 24px;">
+          <div class="done-icon"><span></span></div>
+          <h2>Exam submitted</h2>
+          <p class="muted mt-16" id="doneText">Thank you. Your answers have been saved.</p>
+          <div class="actions mt-24" style="justify-content:center;">
+            <a class="btn btn-primary" id="resultLink" href="#">View result</a>
+            <a class="btn btn-outline" href="student-dashboard.html">Back to dashboard</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/exam-room.js"></script>
+</body>
+</html>

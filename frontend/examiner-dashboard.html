@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | VivaVoice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 id="greeting">Dashboard</h1>
+          <p>Your exams, attempts and results at a glance.</p>
+        </div>
+        <a class="btn btn-accent" href="create-exam.html">+ Create Exam</a>
+      </div>
+
+      <!-- Summary numbers -->
+      <div class="stats">
+        <div class="stat"><div class="label">Total exams</div><div class="value" id="statExams">0</div></div>
+        <div class="stat"><div class="label">Active exams</div><div class="value teal" id="statActive">0</div></div>
+        <div class="stat"><div class="label">Student attempts</div><div class="value amber" id="statAttempts">0</div></div>
+        <div class="stat"><div class="label">Results published</div><div class="value" id="statPublished">0</div></div>
+      </div>
+
+      <!-- Exams table -->
+      <div class="card">
+        <h2>My exams</h2>
+        <p class="card-sub">Share the exam code with students so they can join.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Exam</th><th>Code</th><th>Questions</th><th>Difficulty</th><th>Attempts</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="examRows"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty hidden">
+          <strong>No exams yet</strong>
+          Create your first exam by uploading a document.
+          <div class="mt-16"><a class="btn btn-primary" href="create-exam.html">Create Exam</a></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const user = requireLogin("examiner");
+    buildSidebar("examiner-dashboard.html");
+    document.getElementById("greeting").textContent = "Welcome, " + user.name;
+
+    async function loadExams() {
+      const exams = await api("/api/exams");
+
+      document.getElementById("statExams").textContent = exams.length;
+      document.getElementById("statActive").textContent = exams.filter(e => e.status === "Active").length;
+      document.getElementById("statAttempts").textContent = exams.reduce((sum, e) => sum + e.attempt_count, 0);
+      document.getElementById("statPublished").textContent = exams.filter(e => e.published).length;
+
+      if (exams.length === 0) {
+        document.getElementById("emptyState").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("examRows").innerHTML = exams.map(exam => `
+        <tr>
+          <td><strong>${escapeHtml(exam.title)}</strong><div class="small muted">${escapeHtml(exam.course || "")}</div></td>
+          <td><button class="code-chip" onclick="copyCode('${exam.code}')">${exam.code}</button></td>
+          <td>${exam.num_questions}</td>
+          <td>${badge(exam.difficulty)}</td>
+          <td>${exam.attempt_count}</td>
+          <td>${badge(exam.status)}</td>
+          <td><a class="btn btn-outline btn-sm" href="exam-details.html?id=${exam.id}">View</a></td>
+        </tr>`).join("");
+    }
+
+    loadExams();
+  </script>
+</body>
+</html>
