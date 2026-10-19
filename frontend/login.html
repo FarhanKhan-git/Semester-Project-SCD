@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="auth">
-
+ 
     <!-- Left: brand panel -->
     <div class="auth-side">
       <a class="logo" href="index.html">
@@ -26,14 +26,14 @@
       </div>
       <p class="small">Foundation University Islamabad</p>
     </div>
-
+ 
     <!-- Right: login form -->
     <div class="auth-form">
       <div class="card">
         <h1>Log in</h1>
         <p class="card-sub">Enter your email and password.</p>
         <div id="message" class="hidden"></div>
-
+ 
         <form id="loginForm">
           <div class="field">
             <label for="email">Email</label>
@@ -41,17 +41,20 @@
           </div>
           <div class="field">
             <label for="password">Password</label>
-            <input type="password" id="password" required placeholder="Your password">
+            <div class="pw-wrap">
+              <input type="password" id="password" required placeholder="Your password">
+              <button type="button" class="pw-toggle" onclick="togglePassword(this)" aria-label="Show password" title="Show password"></button>
+            </div>
           </div>
           <button class="btn btn-primary btn-block" type="submit">Log in</button>
         </form>
-
+ 
         <p class="mt-16 small">New to VivaVoice? <a href="register.html">Create an account</a></p>
         <div class="demo-box"></div>
       </div>
     </div>
   </div>
-
+ 
   <script src="js/app.js"></script>
   <script>
     document.getElementById("loginForm").addEventListener("submit", async (event) => {

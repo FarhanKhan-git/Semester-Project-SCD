@@ -2,8 +2,8 @@ VIVAVOICE: A RAG-Grounded AI Voice Examiner
 Semester Project by Muhammad Farhan Khan (F24-BSSE-027)
 Foundation University Islamabad
 =====================================================================
-
-
+ 
+ 
 WHAT IS IN THIS FOLDER
 ---------------------------------------------------------------------
 VivaVoice/
@@ -22,7 +22,7 @@ VivaVoice/
     css/style.css           One stylesheet for every page
     js/app.js               Shared helpers (talking to the server, menu, login)
     js/exam-room.js         Voice exam logic (Web Speech API)
-
+ 
   backend/                  Python server (FastAPI) + local MongoDB
     main.py                 All API routes, and serves the frontend pages
     database.py             Connection to local MongoDB (mongodb://localhost:27017)
@@ -30,44 +30,44 @@ VivaVoice/
     documents.py            Reads PDF/DOCX/TXT and splits it into chunks (RAG step 1)
     ai_engine.py            Question generation + grading (PLACEHOLDER, see below)
     requirements.txt        Python packages to install
-
+ 
   sample/
     Sample_Software_Testing_Chapter.docx   A test document to try the system
-
-
+ 
+ 
 ONE-TIME SETUP (Windows)
 ---------------------------------------------------------------------
 1. Install Python 3.10 or newer from https://www.python.org/downloads/
    IMPORTANT: tick "Add python.exe to PATH" on the first install screen.
-
+ 
 2. Install MongoDB Community Server from
    https://www.mongodb.com/try/download/community
    - Choose "Complete" setup.
    - Keep "Install MongoDB as a Service" ticked (it then starts automatically).
    - Keep "Install MongoDB Compass" ticked (an app to SEE your database).
-
+ 
 3. Open a terminal (Command Prompt) inside the "backend" folder and run:
-
+ 
        pip install -r requirements.txt
-
-
+ 
+ 
 RUNNING THE PROJECT (every time)
 ---------------------------------------------------------------------
 1. Open a terminal inside the "backend" folder and run:
-
+ 
        python -m uvicorn main:app --reload
-
+ 
 2. Open Google Chrome (or Microsoft Edge) and go to:
-
+ 
        http://localhost:8000
-
+ 
 3. To stop the server, press Ctrl + C in the terminal.
-
+ 
 Default admin account (created automatically the first time):
        Email:    admin@vivavoice.local
-       Password: admin123
-
-
+       Password: Admin@123
+ 
+ 
 DEMO STEPS (good for showing your teacher)
 ---------------------------------------------------------------------
 1. Register as an Examiner -> Create Exam -> upload
@@ -82,8 +82,8 @@ DEMO STEPS (good for showing your teacher)
    Click "Publish results" so the student can see them.
 4. Log in as the Student again -> View to see the published result.
 5. Log in as Admin to see all users and system numbers.
-
-
+ 
+ 
 SEEING THE DATA IN MONGODB
 ---------------------------------------------------------------------
 Open MongoDB Compass -> connect to mongodb://localhost:27017
@@ -92,8 +92,8 @@ Open MongoDB Compass -> connect to mongodb://localhost:27017
    exams      exam settings, exam code, document name
    chunks     the document split into small sections (RAG)
    attempts   each student's questions, answers, scores and flags
-
-
+ 
+ 
 IMPORTANT NOTES
 ---------------------------------------------------------------------
 - AI PLACEHOLDER: backend/ai_engine.py currently makes questions and
@@ -107,18 +107,19 @@ IMPORTANT NOTES
   works in all modern browsers.
 - The microphone only works on http://localhost or https sites, so always
   open the project through http://localhost:8000.
-
-
+ 
+ 
 COMMON PROBLEMS
 ---------------------------------------------------------------------
 "Cannot connect to MongoDB"
     MongoDB is not running. Press Windows key, type "Services", find
     "MongoDB Server", right-click -> Start. Then run the server again.
-
+ 
 "uvicorn is not recognized" or "pip is not recognized"
     Use: python -m pip install -r requirements.txt
     and: python -m uvicorn main:app --reload
-
+ 
 Microphone does not work
     Click the lock icon next to the address bar -> allow Microphone,
     or use "Type instead" during the exam.
+ 
